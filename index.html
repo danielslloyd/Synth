@@ -296,7 +296,8 @@
             { id: 'snare', name: 'Snare', type: 'drum-snare', noiseAmount: 0, attack: 1, decay: 100, volume: 70, isPreset: true, category: 'Drums' },
             { id: 'hihat', name: 'Hi-Hat', type: 'drum-hihat', noiseAmount: 0, attack: 1, decay: 50, volume: 50, isPreset: true, category: 'Drums' },
             { id: 'clap', name: 'Clap', type: 'drum-clap', noiseAmount: 0, attack: 1, decay: 80, volume: 60, isPreset: true, category: 'Drums' },
-            { id: 'tom', name: 'Tom', type: 'drum-tom', noiseAmount: 0, attack: 1, decay: 120, volume: 65, isPreset: true, category: 'Drums' }
+            { id: 'tom', name: 'Tom', type: 'drum-tom', noiseAmount: 0, attack: 1, decay: 120, volume: 65, isPreset: true, category: 'Drums' },
+            { id: 'pop', name: 'Pop', type: 'drum-pop', noiseAmount: 0, attack: 1, decay: 50, volume: 50, isPreset: true, category: 'Drums' }
         ];
 
         let selectedInstrumentId = null, editingInstrument = null;
@@ -704,6 +705,7 @@
             if (inst.type === 'drum-hihat') { playHiHat(now, volume); return; }
             if (inst.type === 'drum-clap') { playClap(now, volume); return; }
             if (inst.type === 'drum-tom') { playTom(now, frequency, volume); return; }
+            if (inst.type === 'drum-pop') { playPop(now, volume); return; }
             if (inst.type === 'noise') { playNoise(now, attack, decay, volume, inst.noiseAmount); return; }
             if (inst.type === 'fm') { playFM(inst, frequency, now, attack, decay, volume); return; }
             if (inst.type === 'pulse') { playPulse(inst, frequency, now, attack, decay, volume); return; }
@@ -824,6 +826,26 @@
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
             osc.start(now);
             osc.stop(now + 0.15);
+        }
+
+        function playPop(now, volume) {
+            // Create 1-sample impulse buffer
+            const buffer = audioContext.createBuffer(1, 1, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // Random positive or negative impulse
+            const intensity = 0.5;
+            data[0] = (Math.random() > 0.5 ? 1 : -1) * intensity;
+
+            const src = audioContext.createBufferSource();
+            src.buffer = buffer;
+
+            const popGain = audioContext.createGain();
+            popGain.gain.value = volume;
+
+            src.connect(popGain);
+            popGain.connect(audioContext.destination);
+            src.start(now);
         }
 
         function playNoise(now, attack, decay, volume, extraNoise) {
